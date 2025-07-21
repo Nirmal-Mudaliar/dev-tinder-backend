@@ -34,9 +34,19 @@ app.get('/user', async (req, res) => {
     res.send(users[0]);
   }
   catch (error) {
-    res.status(400).send("Something went wrong in fetchig user by email id: ");
+    res.status(400).send("Something went wrong in fetching user by email id: ");
   }
 });
+
+app.delete('/user', async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.body?.userId);
+    res.send(user);
+  }
+  catch (error) {
+    res.status(400).send('Something went wrong in deleting the user by id');
+  }
+})
 
 app.get('/users', async (req, res) => {
   try {
