@@ -50,7 +50,7 @@ app.delete('/user', async (req, res) => {
 
 app.patch('/user', async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.body?.userId, req.body)
+    const user = await User.findByIdAndUpdate(req.body?.userId, req.body);
     res.send(user);
   } 
   catch (error) {
