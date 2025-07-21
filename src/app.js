@@ -46,6 +46,16 @@ app.delete('/user', async (req, res) => {
   catch (error) {
     res.status(400).send('Something went wrong in deleting the user by id');
   }
+});
+
+app.patch('/user', async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.body?.userId, req.body)
+    res.send(user);
+  } 
+  catch (error) {
+    res.status(400).send('Something went wrong in updating the user');
+  }
 })
 
 app.get('/users', async (req, res) => {
