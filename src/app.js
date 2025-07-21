@@ -20,6 +20,16 @@ app.post('/signup', async (req, res) => {
 
 app.get('/user', async (req, res) => {
   try {
+    const user = await User.findById(req.body?.userId);
+    res.send(user);
+  }
+  catch (error) {
+    res.status(400).send('Something went wrong in fetching user by id');
+  }
+});
+
+app.get('/user', async (req, res) => {
+  try {
     const users = await User.find({ emailId: req.body.emailId });
     res.send(users[0]);
   }
@@ -36,7 +46,7 @@ app.get('/users', async (req, res) => {
   catch (error) {
     res.status(400).send("Something went wrong in fetching all the users");
   }
-})
+});
 
 connectToDb()
   .then(() => {
