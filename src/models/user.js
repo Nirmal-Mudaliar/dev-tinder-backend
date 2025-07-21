@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema({
   },
   emailId: {
     type: String,
+    require: true,
+    unique: true,
+    lowercase: true,
   },
   password: {
     type: String,
@@ -19,6 +22,16 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
   },
+  profileUrl: {
+    type: String,
+    default: 'https://www.pngitem.com/middle/hxRbRT_profile-icon-png-default-profile-picture-png-transparent/',
+  },
+  about: {
+    type: String,
+    default: 'Hey, looking forward to connect!',
+  }
+}, {
+  timestamps: true,
 });
 
 const User = mongoose.model("User", userSchema);
