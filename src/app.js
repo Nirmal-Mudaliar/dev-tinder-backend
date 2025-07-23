@@ -1,14 +1,20 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+
 const { connectToDb } = require('./config/database');
 const { User } = require('./models/user')
 const { signUpValidator } = require('./utils/validators/sign-up-validators');
 const { loginValidators } = require('./utils/validators/login-validators');
-const bcrypt = require('bcrypt');
+const { PORT, SECRET_KEY } = require('./constants/constants');
+const { isUserExist, getAllUsers, getUserById } = require('./utils/user/user');
+const { authMiddleware } = require('./middlewares/auth-middleware');
 
 const app = express();
-const PORT = 7777;
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.post('/signup', async (req, res) => {
   try {
@@ -26,7 +32,7 @@ app.post('/signup', async (req, res) => {
     res.send('User added successfully: ' + userResponse._id);
   }
   catch (error) {
-    res.status(400).send('Error: '+ error.message);
+    res.status(400).send('Error: ' + error.message);
   }
 });
 
@@ -36,7 +42,10 @@ app.post('/login', async (req, res) => {
     loginValidators(emailId, password);
     const user = await User.findOne({ emailId: emailId });
     if (!user) throw new Error('Invalid credentials');
-    if (await bcrypt.compare(password, user.password)) {
+    const isValidPassword = await user.isPasswordValid(password);
+    if (isValidPassword) {
+      const token = await user.addJwtToken();
+      res.cookie('token', token);
       res.send('Login Successfull');
     }
     else res.send('Invalid credentials');
@@ -53,7 +62,7 @@ app.get('/user', async (req, res) => {
     res.send(user);
   }
   catch (error) {
-    res.status(400).send('Something went wrong in fetching user by id: '+ error.message);
+    res.status(400).send('Error: ' + error.message);
   }
 });
 
@@ -63,7 +72,7 @@ app.get('/user', async (req, res) => {
     res.send(users[0]);
   }
   catch (error) {
-    res.status(400).send("Something went wrong in fetching user by email id: "+ error.message);
+    res.status(400).send("Error: " + error.message);
   }
 });
 
@@ -73,7 +82,7 @@ app.delete('/user', async (req, res) => {
     res.send(user);
   }
   catch (error) {
-    res.status(400).send('Something went wrong in deleting the user by id: ' + error.message);
+    res.status(400).send('Error: ' + error.message);
   }
 });
 
@@ -84,19 +93,35 @@ app.patch('/user', async (req, res) => {
     if (!isAllowed) throw new Error('Update is not allowed');
     const user = await User.findByIdAndUpdate(req.body?.userId, req.body);
     res.send(user);
-  } 
+  }
   catch (error) {
-    res.status(400).send('Something went wrong in updating the user: ' + error.message);
+    res.status(400).send('Error: ' + error.message);
+  }
+})
+
+app.get('/profile', authMiddleware, async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) throw new Error('Invalid credentials');
+    res.send(user);
+  }
+  catch (error) {
+    res.send(400).send('Error: ' + error.message);
   }
 })
 
 app.get('/users', async (req, res) => {
   try {
-    const users = await User.find({});
+    const { token } = req.cookies;
+    if (!token) throw new Error('Invalid token');
+    const { _id } = await jwt.verify(token, SECRET_KEY);
+    const isExist = await isUserExist(_id);
+    if (!isExist) throw new Error('Invalid token');
+    const users = await getAllUsers();
     res.send(users);
   }
   catch (error) {
-    res.status(400).send("Something went wrong in fetching all the users" + error.message);
+    res.status(400).send("Error: " + error.message);
   }
 });
 
