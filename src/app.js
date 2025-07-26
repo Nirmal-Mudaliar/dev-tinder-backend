@@ -7,6 +7,7 @@ const { authRouter } = require('./router/auth');
 const { profileRouter } = require('./router/profile');
 const { userRouter } = require('./router/user');
 const { feedRouter } = require('./router/feed');
+const { requestRouter } = require('./router/request');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use('/', authRouter);
 app.use('/', profileRouter);
 app.use('/', userRouter);
 app.use('/', feedRouter);
+app.use('/', requestRouter);
 
 connectToDb()
   .then(() => {
