@@ -4,12 +4,12 @@ const bcrypt = require('bcrypt');
 const { signUpValidator } = require('../utils/validators/sign-up-validators');
 const { loginValidator } = require('../utils/validators/login-validators');
 const { User } = require('../models/user');
+const { getSuccessResponse, getErrorResponse } = require('../utils/response/response');
 
 const router = express.Router();
 
 router.post('/signup', async (req, res) => {
   try {
-    console.log('body: ', req.body);
     const { firstName, lastName, emailId, password } = req.body;
     signUpValidator(firstName, lastName, emailId, password);
     const encryptedPassword = await bcrypt.hash(password, 10);
@@ -20,10 +20,10 @@ router.post('/signup', async (req, res) => {
       password: encryptedPassword,
     }));
     await user.save();
-    res.send('User add successfully');
+    res.send(getSuccessResponse());
   }
   catch (error) {
-    res.status(400).send('Error: ' + error);
+    res.status(400).send(getErrorResponse(error.message));
   }
 });
 
@@ -39,10 +39,10 @@ router.post('/login', async (req, res) => {
     // generate token
     const token = await user.addJwtToken();
     res.cookie('token', token);
-    res.send('Login Success');
+    res.send(getSuccessResponse(token));
   }
   catch (error) {
-    res.status(400).send('Error: ' + error);
+    res.status(400).send(getErrorResponse(error.message));
   }
 });
 
