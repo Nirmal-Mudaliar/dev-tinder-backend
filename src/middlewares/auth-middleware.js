@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { SECRET_KEY } = require('../constants/constants');
 const { getUserById } = require('../utils/user/user');
+const { getErrorResponse } = require('../utils/response/response');
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -13,7 +14,7 @@ const authMiddleware = async (req, res, next) => {
     next();
   }
   catch (error) {
-    res.status(400).send('ERROR: ' + error.message)
+    res.status(400).send(getErrorResponse(error.message));
   }
 
 }
