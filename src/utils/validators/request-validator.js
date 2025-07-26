@@ -26,6 +26,7 @@ const isConnectionRequestAlreadyExist = async (fromUserId, toUserId) => {
 }
 
 const validateConnectionRequestParams = async (fromUserId, toUserId, status) => {
+  if (fromUserId == toUserId) throw new Error('FromUserId is same as ToUserId');
   if (!isValidStatusInConnectionRequestParams(status)) throw new Error('Status is not valid');
   if (!isValidId(toUserId)) throw new Error('User Id is not valid');
   const isUserExistInDB = await isUserExist(toUserId);
